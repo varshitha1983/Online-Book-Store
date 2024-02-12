@@ -9,6 +9,9 @@
 
 using namespace std;
 
+
+
+//Structure for the details of each book
 struct details{
     std::string name;
     std::string author;
@@ -20,13 +23,15 @@ struct details{
 
 };
 
+//Class book which is public accessed by other classes(Public Inheritance)
 class Book{
     public:
-    std::vector<details> books;
-  
+   
 std::vector<details> readBooks(const std::string& filename)
 {
-   
+   // books.clear();
+    std::vector<details> books;
+  
     ifstream inFile(filename);
     if (inFile.is_open())
     {
@@ -77,6 +82,10 @@ void displayBooks(vector<details> b)
 
 
 };
+
+
+//Class Administrator which is useful for the administrator section
+
 class administrator:public Book{
 private:
 
@@ -106,22 +115,16 @@ void add_book(string filename)
 
 }
 
-void outOfStock(int purchases)
-{
-    if(purchases == 100)
-    {
-        cout<<"Item is Out Of Stock"<<endl;
-    }
-}
 
-void change_price(int id)
+
+void change_price(int id,vector<details> allBooks)
 {
-    if(id<=books.size())
+    if(id<=allBooks.size())
     {
     double p;
     cout<<"Enter the changed price of the book:";
     cin>>p;
-    books[id].price=p;
+    allBooks[id].price=p;
     cout<<"Price changed successfully!"<<endl;
     }
     else{
@@ -129,9 +132,9 @@ void change_price(int id)
     }
 }
 
-void total_numberOfBooks()
+void total_numberOfBooks(vector<details> allBooks)
 {
-    cout<<books.size()<<endl;
+    cout<<allBooks.size()<<endl;
 }
 
 void clearData(string filename)
@@ -139,30 +142,77 @@ void clearData(string filename)
     std::ofstream outFile(filename,std::ios::trunc);
     outFile.close();
 }
+
 };
 
+//Class User which is for the users
 
 class user:public Book{
     public:
-    void wishlist()
+    
+    void addToWishlist(vector<details> allBooks,int i )
     {
+        //vector<details> wishbooks;
+        //wishbooks.push_back(allBooks[i]);
+        std::ofstream outFile("wishlist.txt",std::ios::app);
+        outFile<<allBooks[i].name<<','<<allBooks[i].author<<','<<allBooks[i].genre<<','<<allBooks[i].book_id<<' '<<allBooks[i].price<<' '<<allBooks[i].global_rating<<'\n';
+        outFile.close();
+
+
+    }
+    void addToCart(vector<details> allBooks,int i)
+    {
+        std::ofstream outFile("cart.txt",std::ios::app);
+        outFile<<allBooks[i].name<<','<<allBooks[i].author<<','<<allBooks[i].genre<<','<<allBooks[i].book_id<<' '<<allBooks[i].price<<' '<<allBooks[i].global_rating<<'\n';
+        outFile.close();
+    }
+    void myWishlist()
+    {
+        vector<details> wishBooks=readBooks("wishlist.txt");
+        displayBooks(wishBooks);
 
     }
     void myCart()
     {
-
+        vector<details> cartBooks=readBooks("cart.txt");
+        displayBooks(cartBooks);
     }
-    void myOrders()
+    
+    void exploreBooks(vector<details> allBooks)
     {
-
-    }
-    void myProfile()
-    {
-
-    }
-    void exploreBooks()
-    {
-
+        char info;
+        cout<<"Press Y if you want to add any book to your cart/wishlist\nPress N to not"<<endl;
+        cin>>info;
+        while((info != 'n') && (info != 'N') && (info !='Y') && (info !='y'))
+        {
+            cout<<"Invalid character.Please try again!"<<endl;
+            cin>>info;
+        }
+        if((info == 'N') || (info == 'n'))
+        {
+            return;
+        }
+        else if((info == 'Y') || (info == 'y')){
+            cout<<"Enter the id of the book:";
+            int i;
+            cin>>i;
+            cout<<"Enter W to add to wishlist & Enter C to add to cart:";
+            char temp;
+            cin>>temp;
+            while((temp!='w') && (temp!='W') && (temp!='c') && (temp!='C'))
+            {
+                cout<<"Invalid character.Please try again!"<<endl;
+                cin>>temp;
+            }
+            if((temp == 'W') || (temp == 'w'))
+            {
+                addToWishlist(allBooks,i-1);
+            }
+            else {
+                addToCart(allBooks,i-1);
+            }
+           
+        }
     }
     void myRecoms()
     {
@@ -189,7 +239,12 @@ int main()
         while((username != "varshitha") && (password !="abc"))
         {
             cout<<"Invalid username or password.Try again!";
+            cin>>username;
+            cin>>password;
         } 
+        vector<details> allBooks;
+        allBooks.clear();
+        allBooks=b.readBooks("books.txt");
         while(1)
         {
             
@@ -206,17 +261,22 @@ int main()
                 cout<<"Enter the the book id for which you want to change the price:";
                 int id;
                 cin>>id;
-                a.change_price(id);
+                allBooks.clear();
+                allBooks=b.readBooks("books.txt");
+                a.change_price(id,allBooks);
             }
             else if(subchoice == 3)
             {
                 //a.add_book("books.txt");
-                vector<details> allBooks=b.readBooks("books.txt");
+                allBooks.clear();
+                allBooks=b.readBooks("books.txt");
                 a.displayBooks(allBooks);
             }
             else if(subchoice == 4)
             {
-                a.total_numberOfBooks();
+                allBooks.clear();
+                allBooks=b.readBooks("books.txt");
+                a.total_numberOfBooks(allBooks);
             }
             else if(subchoice == 5)
             {
@@ -226,12 +286,50 @@ int main()
             {
                 exit(1);
             }
+            else{
+                cout<<"Invalid option.Please try again!"<<endl;
+            }
         }
     }
-    /*a.add_book("books.txt");
-    vector<details> allBooks=b.readBooks("books.txt");
-    b.displayBooks(allBooks);
-    //a.clearData("books.txt");*/
+
+    if(choice == 1){
+        cout<<"Enter your good name:";
+        string n;
+        cin>>n;
+        cout<<"\n\nHello "<<n<<"\nWelcome to the Book Store:)\n\n\n";
+        int option;
+       
+
+        while(1){
+            cout<<"1.View My Wishlist\n2.View My Cart\n3.View My Recommentations\n4.Explore books\n5.Exit\n";
+            cout<<"Enter your option:";
+            cin>>option;
+            if(option == 1){
+                u.myWishlist();
+            }
+            else if(option == 2){
+                u.myCart();
+            }
+            else if(option == 3){
+
+            }
+            else if(option == 4){
+                 vector<details> allBooks=b.readBooks("books.txt");
+                u.displayBooks(allBooks);
+                u.exploreBooks(allBooks);
+
+            }
+            else if(option == 5){
+                exit(1);
+            }
+            else{
+                cout<<"Invalid option.Please try again!"<<endl;
+            }
+
+        }
+
+    }
+
 
 
     return 0;
