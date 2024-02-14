@@ -216,7 +216,9 @@ class user:public Book{
     }
     void myRecoms()
     {
-        
+       
+       vector<details> recoms=readBooks("recommendations.txt");
+       displayBooks(recoms); 
     }
 
 
