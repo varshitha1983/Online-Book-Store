@@ -71,14 +71,20 @@ std::vector<details> readBooks(const std::string& filename)
 
 void displayBooks(vector<details> b)
 {
-    cout<<setw(10)<<"Book ID"<<setw(20)<<"Name"<<setw(20)<<"Author"<<setw(20)<<"Genre"<<setw(10)<<"Price"<<setw(20)<<"Global Rating"<<endl;
+    cout<<setw(10)<<"Book ID"<<setw(50)<<"Name"<<setw(30)<<"Author"<<setw(30)<<"Genre"<<setw(10)<<"Price"<<setw(20)<<"Global Rating"<<endl;
 
     for(int i=0;i<b.size();i++)
     {
-        cout<<setw(10)<<b[i].book_id<<setw(20)<<b[i].name<<setw(20)<<b[i].author<<setw(20)<<b[i].genre<<setw(10)<<b[i].price<<setw(20)<<b[i].global_rating<<endl;
+        cout<<setw(10)<<b[i].book_id<<setw(50)<<b[i].name<<setw(30)<<b[i].author<<setw(30)<<b[i].genre<<setw(10)<<b[i].price<<setw(20)<<b[i].global_rating<<endl;
     }
-    //display(adm);
 }
+
+void clearData(string filename)
+{
+    std::ofstream outFile(filename,std::ios::trunc);
+    outFile.close();
+}
+
 
 
 };
@@ -124,6 +130,7 @@ void change_price(int id,vector<details> allBooks)
     double p;
     cout<<"Enter the changed price of the book:";
     cin>>p;
+    
     allBooks[id].price=p;
     cout<<"Price changed successfully!"<<endl;
     }
@@ -137,11 +144,7 @@ void total_numberOfBooks(vector<details> allBooks)
     cout<<allBooks.size()<<endl;
 }
 
-void clearData(string filename)
-{
-    std::ofstream outFile(filename,std::ios::trunc);
-    outFile.close();
-}
+
 
 };
 
@@ -214,11 +217,18 @@ class user:public Book{
            
         }
     }
-    void myRecoms()
+vector<details> myRecoms(vector<details> userWishlist,vector<details> library)
     {
-       
-       vector<details> recoms=readBooks("recommendations.txt");
-       displayBooks(recoms); 
+        
+        std::vector<details> recommendations;
+    for (const auto& wish : userWishlist) {
+        for (const auto& book : library) {
+            if (book.genre == wish.genre) {
+                recommendations.push_back(book);
+            }
+        }
+    }
+    return recommendations;
     }
 
 
@@ -250,7 +260,7 @@ int main()
         while(1)
         {
             
-            cout<<"1.Add a new book\n2.Change the price of the book\n3.Display the list of the books\n4.Check total number of books\n5.Clear all the data\n6.Exit"<<endl;
+            cout<<"\n\n1.Add a new book\n2.Change the price of the book\n3.Display the list of the books\n4.Check total number of books\n5.Clear all the data\n6.Exit"<<endl;
             cout<<"Enter your subchoice:";
             cin>>subchoice;
             if(subchoice == 1)
@@ -303,7 +313,7 @@ int main()
        
 
         while(1){
-            cout<<"1.View My Wishlist\n2.View My Cart\n3.View My Recommentations\n4.Explore books\n5.Exit\n";
+            cout<<"1.View My Wishlist\n2.View My Cart\n3.View My Recommentations\n4.Explore books\n5.Clear Data from Wishlist or Cart\n6.Exit\n";
             cout<<"Enter your option:";
             cin>>option;
             if(option == 1){
@@ -313,6 +323,10 @@ int main()
                 u.myCart();
             }
             else if(option == 3){
+                std::vector<details> userWishlist = u.readBooks("wishlist.txt");
+                std::vector<details> library = u.readBooks("books.txt");
+                std::vector<details> recommendations = u.myRecoms(userWishlist,library);
+                u.displayBooks(recommendations);
 
             }
             else if(option == 4){
@@ -321,7 +335,22 @@ int main()
                 u.exploreBooks(allBooks);
 
             }
-            else if(option == 5){
+            else if(option == 5)
+            {
+                int suboption;
+                cout<<"Enter 1 to clear data from wishlist\nEnter 2 to clear data from Cart:";
+                cin>>suboption;
+                if(suboption == 1)
+                {
+                    u.clearData("wishlist.txt");
+                }
+                if(suboption == 2)
+                {
+                    u.clearData("cart.txt");
+                }
+
+            }
+            else if(option == 6){
                 exit(1);
             }
             else{
